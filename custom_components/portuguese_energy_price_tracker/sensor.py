@@ -354,6 +354,7 @@ class EnergyPriceTomorrowMaxSensor(EnergyPriceBaseSensor):
         """Return additional attributes."""
         attrs = super().extra_state_attributes
         attrs["period"] = "tomorrow"
+        attrs["data_available"] = self.coordinator.data.get("tomorrow_max_price") is not None if self.coordinator.data else False
         attrs["last_update"] = datetime.now().isoformat()
         return attrs
 
@@ -386,6 +387,7 @@ class EnergyPriceTomorrowMaxVATSensor(EnergyPriceBaseSensor):
         attrs = super().extra_state_attributes
         attrs["vat_included"] = True
         attrs["period"] = "tomorrow"
+        attrs["data_available"] = self.coordinator.data.get("tomorrow_max_price_vat") is not None if self.coordinator.data else False
         attrs["last_update"] = datetime.now().isoformat()
         return attrs
 
@@ -417,6 +419,7 @@ class EnergyPriceTomorrowMinSensor(EnergyPriceBaseSensor):
         """Return additional attributes."""
         attrs = super().extra_state_attributes
         attrs["period"] = "tomorrow"
+        attrs["data_available"] = self.coordinator.data.get("tomorrow_min_price") is not None if self.coordinator.data else False
         attrs["last_update"] = datetime.now().isoformat()
         return attrs
 
@@ -449,6 +452,7 @@ class EnergyPriceTomorrowMinVATSensor(EnergyPriceBaseSensor):
         attrs = super().extra_state_attributes
         attrs["vat_included"] = True
         attrs["period"] = "tomorrow"
+        attrs["data_available"] = self.coordinator.data.get("tomorrow_min_price_vat") is not None if self.coordinator.data else False
         attrs["last_update"] = datetime.now().isoformat()
         return attrs
 
