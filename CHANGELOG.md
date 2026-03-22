@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-03-22
+
+### Fixed
+
+- **Ibelectra formula variables**: Added `Perdas_Anuais` aliases (with "is") to match formula variable names from Indexados.csv — fixes all Ibelectra sensors showing Unknown
+- **Better formula error messages**: Unresolved variables now logged by name instead of generic "Unsafe" warning
+
 ## [2.3.0] - 2026-03-22
 
 ### Changed
