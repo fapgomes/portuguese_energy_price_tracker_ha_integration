@@ -35,3 +35,6 @@ dev_config/
 
 # GitHub Actions workflow artifacts
 release_notes.md
+
+# Temporary data files
+*.xlsx

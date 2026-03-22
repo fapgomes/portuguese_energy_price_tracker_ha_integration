@@ -18,28 +18,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **New providers**: Endesa, Goldenergy, Ibelectra (Família + Amigo), Iberdrola Indexado, Luzboa, LUZiGÁS, EDP Média, G9 Index, Repsol PRO
+- **12 new providers**: Endesa, Goldenergy, Ibelectra (Família + Amigo), Iberdrola Indexado, Luzboa, LUZiGÁS, EDP Média, G9 Index/Smart Index, Repsol PRO
 - **Formula engine**: New `formula_engine.py` for calculating prices from OMIE data + constants
 - **HuggingFace fetcher**: New `hf_fetcher.py` for fetching OMIE, constants, and provider catalog
-
-## [2.2.18] - 2026-03-01
+- **`data_available` attribute**: Tomorrow sensors now include `data_available: true/false` for automations
+- **Migration v7**: Automatic migration of provider names from old GitHub CSV format to HuggingFace format
 
 ### Fixed
 
-- **Routing sensors VAT suffix mismatch**: All VAT routing sensors were always returning None/unavailable because they looked for entities with `_vat` suffix instead of the correct `_with_vat` suffix
-- **Options flow crash (500 error)**: Modernized OptionsFlowHandler to not pass config_entry in __init__ (deprecated in recent HA versions), fixing the settings button error
-- **@callback on async method**: Removed incorrect `@callback` decorator from async `_update_options` method in select.py
-- **await on sync function**: Removed invalid `await` from synchronous `write_utf8_file()` call in csv_fetcher.py
-- **Timezone-naive datetime usage**: Replaced `datetime.now()` with `dt_util.now()` in coordinator and csv_fetcher for correct timezone handling
-
-### Changed
-
-- **BREAKING: Routing sensors architectural redesign**: ActiveProvider routing sensors now exist at integration level
-  - Routing sensors are NO LONGER tied to any specific config entry
-  - Persist independently of provider configuration
-  - Always available regardless of number of providers configured
-  - Will be recreated on next Home Assistant restart or integration reload
-  - Migration v3 removes old routing sensors for clean recreation with new architecture
+- **Routing sensors VAT suffix mismatch**: All VAT routing sensors were always returning None/unavailable (suffix `_vat` → `_with_vat`)
+- **Options flow crash (500 error)**: Modernized OptionsFlowHandler for recent HA versions
+- **Routing sensors intermittent Unavailable**: Removed fragile `available` override and `should_poll=False`; simplified event callback with cached entity_id
+- **`@callback` on async method**: Removed incorrect decorator from async `_update_options` in select.py
+- **`await` on sync function**: Removed invalid `await` from `write_utf8_file()` in csv_fetcher.py
+- **Timezone-naive datetime**: Replaced `datetime.now()` with `dt_util.now()` in coordinator and csv_fetcher
 
 ## [2.2.7] - 2025-11-23
 
@@ -346,5 +338,4 @@ data:
 ## Support
 
 For issues, questions, or feature requests:
-- [GitHub Issues](https://github.com/joaofernandes/portuguese_energy_price_tracker_ha_integration/issues)
-- [GitHub Discussions](https://github.com/joaofernandes/portuguese_energy_price_tracker_ha_integration/discussions)
+- [GitHub Issues](https://github.com/fapgomes/portuguese_energy_price_tracker_ha_integration/issues)
