@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-03-22
+
+### Changed
+
+- **BREAKING: New data source**: Switched from GitHub pre-calculated CSV to HuggingFace OMIE + formula-based calculation
+  - Prices are now calculated from OMIE market data + provider-specific formulas
+  - Supports all indexed energy providers in Portugal (23 providers, up from 11)
+  - Provider names updated to match HuggingFace naming (automatic migration v7)
+
+### Added
+
+- **New providers**: Endesa, Goldenergy, Ibelectra (Família + Amigo), Iberdrola Indexado, Luzboa, LUZiGÁS, EDP Média, G9 Index, Repsol PRO
+- **Formula engine**: New `formula_engine.py` for calculating prices from OMIE data + constants
+- **HuggingFace fetcher**: New `hf_fetcher.py` for fetching OMIE, constants, and provider catalog
+
 ## [2.2.18] - 2026-03-01
 
 ### Fixed

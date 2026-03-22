@@ -18,10 +18,10 @@ DEFAULT_VAT: Final = 23
 DEFAULT_INCLUDE_VAT: Final = True
 DEFAULT_ENABLE_DEBUG: Final = False
 
-# Supported providers and their tariffs (from GitHub CSV)
+# Supported providers and their tariffs (from HuggingFace Indexados.csv)
 PROVIDERS: Final = {
-    "Alfa Power Index BTN": {
-        "name": "Alfa Power Index BTN",
+    "Alfa Energia - ALFA POWER INDEX BTN": {
+        "name": "Alfa Energia - ALFA POWER INDEX BTN",
         "tariffs": [
             "SIMPLE",
             "BIHORARIO_DIARIO",
@@ -56,8 +56,8 @@ PROVIDERS: Final = {
             "TRIHORARIO_SEMANAL_HV",
         ],
     },
-    "EDP Indexada Horária": {
-        "name": "EDP Indexada Horária",
+    "EDP - Eletricidade Indexada Horária": {
+        "name": "EDP - Eletricidade Indexada Horária",
         "tariffs": [
             "SIMPLE",
             "BIHORARIO_DIARIO",
@@ -68,8 +68,8 @@ PROVIDERS: Final = {
             "TRIHORARIO_SEMANAL_HV",
         ],
     },
-    "EZU Tarifa Coletiva": {
-        "name": "EZU Tarifa Coletiva",
+    "EDP - Eletricidade Indexada Média": {
+        "name": "EDP - Eletricidade Indexada Média",
         "tariffs": [
             "SIMPLE",
             "BIHORARIO_DIARIO",
@@ -80,8 +80,16 @@ PROVIDERS: Final = {
             "TRIHORARIO_SEMANAL_HV",
         ],
     },
-    "G9 Smart Dynamic": {
-        "name": "G9 Smart Dynamic",
+    "Endesa - Tarifa Indexada": {
+        "name": "Endesa - Tarifa Indexada",
+        "tariffs": [
+            "SIMPLE",
+            "BIHORARIO_DIARIO",
+            "BIHORARIO_SEMANAL",
+        ],
+    },
+    "EZU - Indexada": {
+        "name": "EZU - Indexada",
         "tariffs": [
             "SIMPLE",
             "BIHORARIO_DIARIO",
@@ -92,8 +100,8 @@ PROVIDERS: Final = {
             "TRIHORARIO_SEMANAL_HV",
         ],
     },
-    "Galp Plano Dinâmico": {
-        "name": "Galp Plano Dinâmico",
+    "G9 - Smart Dynamic": {
+        "name": "G9 - Smart Dynamic",
         "tariffs": [
             "SIMPLE",
             "BIHORARIO_DIARIO",
@@ -104,8 +112,8 @@ PROVIDERS: Final = {
             "TRIHORARIO_SEMANAL_HV",
         ],
     },
-    "MeoEnergia Tarifa Variável": {
-        "name": "MeoEnergia Tarifa Variável",
+    "G9 - Smart Dynamic (Empresarial)": {
+        "name": "G9 - Smart Dynamic (Empresarial)",
         "tariffs": [
             "SIMPLE",
             "BIHORARIO_DIARIO",
@@ -113,6 +121,114 @@ PROVIDERS: Final = {
             "TRIHORARIO_DIARIO",
             "TRIHORARIO_DIARIO_HV",
             "TRIHORARIO_SEMANAL",
+            "TRIHORARIO_SEMANAL_HV",
+        ],
+    },
+    "G9 - Smart Index": {
+        "name": "G9 - Smart Index",
+        "tariffs": [
+            "SIMPLE",
+            "BIHORARIO_DIARIO",
+            "BIHORARIO_SEMANAL",
+            "TRIHORARIO_DIARIO",
+            "TRIHORARIO_DIARIO_HV",
+            "TRIHORARIO_SEMANAL",
+            "TRIHORARIO_SEMANAL_HV",
+        ],
+    },
+    "G9 - Smart Index (Empresarial)": {
+        "name": "G9 - Smart Index (Empresarial)",
+        "tariffs": [
+            "SIMPLE",
+            "BIHORARIO_DIARIO",
+            "BIHORARIO_SEMANAL",
+            "TRIHORARIO_DIARIO",
+            "TRIHORARIO_DIARIO_HV",
+            "TRIHORARIO_SEMANAL",
+            "TRIHORARIO_SEMANAL_HV",
+        ],
+    },
+    "Galp - Plano Flexível / Dinâmico": {
+        "name": "Galp - Plano Flexível / Dinâmico",
+        "tariffs": [
+            "SIMPLE",
+            "BIHORARIO_DIARIO",
+            "BIHORARIO_SEMANAL",
+            "TRIHORARIO_DIARIO",
+            "TRIHORARIO_DIARIO_HV",
+            "TRIHORARIO_SEMANAL",
+            "TRIHORARIO_SEMANAL_HV",
+        ],
+    },
+    "Goldenergy - Tarifário Indexado 100%": {
+        "name": "Goldenergy - Tarifário Indexado 100%",
+        "tariffs": [
+            "SIMPLE",
+        ],
+    },
+    "Ibelectra - Solução Amigo": {
+        "name": "Ibelectra - Solução Amigo",
+        "tariffs": [
+            "SIMPLE",
+            "BIHORARIO_DIARIO",
+            "BIHORARIO_SEMANAL",
+            "TRIHORARIO_DIARIO_HV",
+            "TRIHORARIO_SEMANAL_HV",
+        ],
+    },
+    "Ibelectra - Solução Família": {
+        "name": "Ibelectra - Solução Família",
+        "tariffs": [
+            "SIMPLE",
+            "BIHORARIO_DIARIO",
+            "BIHORARIO_SEMANAL",
+            "TRIHORARIO_DIARIO_HV",
+            "TRIHORARIO_SEMANAL_HV",
+        ],
+    },
+    "Iberdrola - Simples Indexado": {
+        "name": "Iberdrola - Simples Indexado",
+        "tariffs": [
+            "SIMPLE",
+        ],
+    },
+    "Iberdrola - Simples Indexado Dinâmico": {
+        "name": "Iberdrola - Simples Indexado Dinâmico",
+        "tariffs": [
+            "SIMPLE",
+        ],
+    },
+    "Luzboa - BTN SPOTDEF": {
+        "name": "Luzboa - BTN SPOTDEF",
+        "tariffs": [
+            "SIMPLE",
+            "BIHORARIO_DIARIO",
+            "BIHORARIO_SEMANAL",
+            "TRIHORARIO_DIARIO",
+            "TRIHORARIO_DIARIO_HV",
+            "TRIHORARIO_SEMANAL",
+            "TRIHORARIO_SEMANAL_HV",
+        ],
+    },
+    "LUZiGÁS - Super Lig Index": {
+        "name": "LUZiGÁS - Super Lig Index",
+        "tariffs": [
+            "SIMPLE",
+            "BIHORARIO_DIARIO",
+            "BIHORARIO_SEMANAL",
+            "TRIHORARIO_DIARIO",
+            "TRIHORARIO_DIARIO_HV",
+            "TRIHORARIO_SEMANAL",
+            "TRIHORARIO_SEMANAL_HV",
+        ],
+    },
+    "Meo Energia - Tarifa Variável": {
+        "name": "Meo Energia - Tarifa Variável",
+        "tariffs": [
+            "SIMPLE",
+            "BIHORARIO_DIARIO",
+            "BIHORARIO_SEMANAL",
+            "TRIHORARIO_DIARIO_HV",
             "TRIHORARIO_SEMANAL_HV",
         ],
     },
@@ -122,8 +238,8 @@ PROVIDERS: Final = {
             "SIMPLE",
         ],
     },
-    "Repsol Leve Sem Mais": {
-        "name": "Repsol Leve Sem Mais",
+    "Repsol - Leve PRO Sem Mais": {
+        "name": "Repsol - Leve PRO Sem Mais",
         "tariffs": [
             "SIMPLE",
             "BIHORARIO_DIARIO",
@@ -134,6 +250,30 @@ PROVIDERS: Final = {
             "TRIHORARIO_SEMANAL_HV",
         ],
     },
+    "Repsol - Leve Sem Mais": {
+        "name": "Repsol - Leve Sem Mais",
+        "tariffs": [
+            "SIMPLE",
+            "BIHORARIO_DIARIO",
+            "BIHORARIO_SEMANAL",
+            "TRIHORARIO_DIARIO",
+            "TRIHORARIO_DIARIO_HV",
+            "TRIHORARIO_SEMANAL",
+            "TRIHORARIO_SEMANAL_HV",
+        ],
+    },
+}
+
+# Migration mapping: old provider names (GitHub CSV) -> new names (HuggingFace)
+PROVIDER_NAME_MIGRATION: Final = {
+    "Alfa Power Index BTN": "Alfa Energia - ALFA POWER INDEX BTN",
+    "EDP Indexada Horária": "EDP - Eletricidade Indexada Horária",
+    "EZU Tarifa Coletiva": "EZU - Indexada",
+    "EZU Tarifa Indexada": "EZU - Indexada",
+    "G9 Smart Dynamic": "G9 - Smart Dynamic",
+    "Galp Plano Dinâmico": "Galp - Plano Flexível / Dinâmico",
+    "MeoEnergia Tarifa Variável": "Meo Energia - Tarifa Variável",
+    "Repsol Leve Sem Mais": "Repsol - Leve Sem Mais",
 }
 
 # Tariff display names (internal codes)

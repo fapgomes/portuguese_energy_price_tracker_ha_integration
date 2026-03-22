@@ -390,6 +390,22 @@ async def _async_migrate_entities(hass: HomeAssistant, entry: ConfigEntry) -> No
     else:
         _LOGGER.info(f"[MIGRATION DEBUG] Skipping migration v6 (migration_version={migration_version})")
 
+    # Version 7: Migrate provider names from GitHub CSV to HuggingFace naming (v2.3.0+)
+    if migration_version < 7:
+        from .const import PROVIDER_NAME_MIGRATION
+        _LOGGER.info("Running migration v7: Migrating provider names to HuggingFace format")
+
+        old_provider = entry.data.get("provider", "")
+        new_data = {**entry.data, "migration_version": 7}
+
+        if old_provider in PROVIDER_NAME_MIGRATION:
+            new_provider = PROVIDER_NAME_MIGRATION[old_provider]
+            new_data["provider"] = new_provider
+            _LOGGER.info(f"Migrated provider name: '{old_provider}' → '{new_provider}'")
+
+        hass.config_entries.async_update_entry(entry, data=new_data)
+        _LOGGER.info("Migration v7 complete")
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Energy Price Tracker from a config entry."""
