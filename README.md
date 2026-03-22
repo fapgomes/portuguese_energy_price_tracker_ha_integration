@@ -2,7 +2,7 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 [![GitHub Release](https://img.shields.io/github/release/fapgomes/portuguese_energy_price_tracker_ha_integration.svg)](https://github.com/fapgomes/portuguese_energy_price_tracker_ha_integration/releases)
-[![License](https://img.shields.io/github/license/fapgomes/portuguese_energy_price_tracker_ha_integration.svg)](LICENSE)
+[![License](https://img.shields.io/github/license/fapgomes/portuguese_energy_price_tracker_ha_integration.svg)](https://github.com/fapgomes/portuguese_energy_price_tracker_ha_integration/blob/main/LICENSE)
 
 A Home Assistant custom integration that tracks real-time electricity prices for Portuguese energy providers. Calculates hourly prices from OMIE market data using provider-specific formulas.
 
