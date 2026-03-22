@@ -1,23 +1,51 @@
 # Portuguese Energy Price Tracker for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![GitHub Release](https://img.shields.io/github/release/joaofernandes/portuguese_energy_price_tracker_ha_integration.svg)](https://github.com/joaofernandes/portuguese_energy_price_tracker_ha_integration/releases)
-[![License](https://img.shields.io/github/license/joaofernandes/portuguese_energy_price_tracker_ha_integration.svg)](LICENSE)
+[![GitHub Release](https://img.shields.io/github/release/fapgomes/portuguese_energy_price_tracker_ha_integration.svg)](https://github.com/fapgomes/portuguese_energy_price_tracker_ha_integration/releases)
+[![License](https://img.shields.io/github/license/fapgomes/portuguese_energy_price_tracker_ha_integration.svg)](LICENSE)
 
-A Home Assistant custom integration that tracks real-time electricity prices for Portuguese energy providers. Get hourly energy prices from multiple providers including Coopérnico GO, G9 Smart Dynamic, and Alfa Power Index.
+A Home Assistant custom integration that tracks real-time electricity prices for Portuguese energy providers. Calculates hourly prices from OMIE market data using provider-specific formulas.
 
-📊 **[View Data Flow Architecture](docs/DATA_FLOW.md)** - Comprehensive diagram showing how data flows through the integration
+> **Note:** This is a fork of [joaofernandes/portuguese_energy_price_tracker_ha_integration](https://github.com/joaofernandes/portuguese_energy_price_tracker_ha_integration) with an expanded data source and additional providers.
 
 ## Features
 
-- **Real-time Energy Prices**: Fetches hourly electricity prices directly from GitHub CSV data source
-- **Multiple Providers**: Supports various Portuguese energy providers and tariff options
-- **Current & Historical Data**: Access current prices, today's min/max, and full price arrays
-- **Bi-tariff Support**: Compatible with Bi-horário Diário and Bi-horário Semanal tariffs
+- **Real-time Energy Prices**: Calculates electricity prices from OMIE market data + provider formulas
+- **23 Providers**: Supports all major Portuguese indexed energy providers
+- **Current & Future Data**: Access current prices, today's min/max, tomorrow's prices (available after ~13h)
+- **Multi-tariff Support**: Simples, Bi-horário, Tri-horário and high-voltage tariffs
 - **VAT Flexibility**: Configurable VAT rate (default 23%) with automatic price calculations
 - **Smart Caching**: 1-hour cache with local file fallback for offline reliability
+- **Active Provider Routing**: Generic sensors that follow your selected provider
 - **Manual Refresh Service**: Force data updates with optional historical date lookup
-- **Low Resource Usage**: Efficient CSV parsing with minimal memory footprint
+
+## Supported Providers
+
+| Provider | Type | Tariffs |
+|----------|------|---------|
+| Alfa Energia - ALFA POWER INDEX BTN | Quarto-horário | Simples, Bi, Tri |
+| Coopérnico Base | Quarto-horário | Simples, Bi, Tri |
+| Coopérnico GO | Quarto-horário | Simples, Bi, Tri |
+| EDP - Eletricidade Indexada Horária | Quarto-horário | Simples, Bi, Tri |
+| EDP - Eletricidade Indexada Média | Média | Simples, Bi, Tri |
+| Endesa - Tarifa Indexada | Média | Simples, Bi |
+| EZU - Indexada | Quarto-horário | Simples, Bi, Tri |
+| G9 - Smart Dynamic | Quarto-horário | Simples, Bi, Tri |
+| G9 - Smart Dynamic (Empresarial) | Quarto-horário | Simples, Bi, Tri |
+| G9 - Smart Index | Média | Simples, Bi, Tri |
+| G9 - Smart Index (Empresarial) | Média | Simples, Bi, Tri |
+| Galp - Plano Flexível / Dinâmico | Quarto-horário | Simples, Bi, Tri |
+| Goldenergy - Tarifário Indexado 100% | Média | Simples |
+| **Ibelectra - Solução Amigo** | Média | Simples, Bi, Tri HV |
+| **Ibelectra - Solução Família** | Média | Simples, Bi, Tri HV |
+| Iberdrola - Simples Indexado | Média | Simples |
+| Iberdrola - Simples Indexado Dinâmico | Quarto-horário | Simples |
+| **Luzboa - BTN SPOTDEF** | Média | Simples, Bi, Tri |
+| **LUZiGÁS - Super Lig Index** | Média | Simples, Bi, Tri |
+| Meo Energia - Tarifa Variável | Quarto-horário | Simples, Bi, Tri HV |
+| Plenitude - Tendência | Quarto-horário | Simples |
+| Repsol - Leve PRO Sem Mais | Quarto-horário | Simples, Bi, Tri |
+| Repsol - Leve Sem Mais | Quarto-horário | Simples, Bi, Tri |
 
 ## Installation
 
@@ -27,266 +55,163 @@ A Home Assistant custom integration that tracks real-time electricity prices for
 2. Click on "Integrations"
 3. Click the three dots in the top right corner
 4. Select "Custom repositories"
-5. Add this repository URL: `https://github.com/joaofernandes/portuguese_energy_price_tracker_ha_integration`
+5. Add this repository URL: `https://github.com/fapgomes/portuguese_energy_price_tracker_ha_integration`
 6. Select category: "Integration"
 7. Click "Add"
 8. Find "Portuguese Energy Price Tracker" in HACS and click "Download"
-9. Restart Home Assistant
+9. **Restart Home Assistant** (required, not just reload)
 
 ### Manual Installation
 
-1. Download the latest release from [GitHub releases](https://github.com/joaofernandes/portuguese_energy_price_tracker_ha_integration/releases)
-2. Extract the `energy_price_tracker` folder to your `custom_components` directory
+1. Download the latest release from [GitHub releases](https://github.com/fapgomes/portuguese_energy_price_tracker_ha_integration/releases)
+2. Copy the `custom_components/portuguese_energy_price_tracker` folder to your `custom_components` directory
 3. Restart Home Assistant
+
+### Migrating from the original integration
+
+If you already have [joaofernandes/portuguese_energy_price_tracker_ha_integration](https://github.com/joaofernandes/portuguese_energy_price_tracker_ha_integration) installed:
+
+1. In HACS, remove the original integration (this only removes files, not your config/data)
+2. Add this fork as a custom repository (see above)
+3. Install and restart HA
+4. Your existing config entries and sensor history are preserved
+5. Provider names are automatically migrated (migration v7)
 
 ## Configuration
 
 ### Via UI
 
-1. Go to **Settings** → **Devices & Services**
+1. Go to **Settings** > **Devices & Services**
 2. Click **+ Add Integration**
 3. Search for "Portuguese Energy Price Tracker"
 4. Follow the configuration flow:
-   - **Provider**: Select your energy provider (e.g., Coopérnico GO, G9 Smart Dynamic)
-   - **Tariff**: Choose your tariff plan (e.g., BIHORARIO_SEMANAL, SIMPLES)
+   - **Provider**: Select your energy provider
+   - **Tariff**: Choose your tariff plan
    - **Display Name**: Custom name for this configuration (optional)
    - **VAT Rate**: VAT percentage (default: 23)
 
 ### Multiple Providers
 
-You can add multiple instances for different providers or tariffs. Each instance creates its own set of sensors with unique entity IDs based on the provider and tariff.
+You can add multiple instances for different providers or tariffs. Each instance creates its own set of sensors. Use the **Active Energy Provider** select entity to switch between providers in the generic routing sensors.
 
-### Managing Configurations
-
-**Add a new provider:**
-1. Go to **Settings** → **Devices & Services**
-2. Click **+ Add Integration**
-3. Search for "Portuguese Energy Price Tracker"
-4. Follow the configuration flow
-
-**Edit a provider:**
-1. Go to **Settings** → **Devices & Services**
-2. Find "Portuguese Energy Price Tracker"
-3. Click on the provider instance you want to edit
-4. Click **Configure**
-5. Update settings (Display Name, VAT Rate)
-
-**Delete a provider:**
-1. Go to **Settings** → **Devices & Services**
-2. Find "Portuguese Energy Price Tracker"
-3. Click on the provider instance you want to remove
-4. Click the **three-dot menu** (⋮) → **Delete**
-5. Confirm deletion
-
-*Note: Deleting a provider will remove all its sensors. CSV cache files are shared between all providers and will remain for use by other configured instances.*
-
-## Sensors Created
-
-The integration creates two types of sensors:
-
-1. **Provider-Specific Sensors**: Created for each configured provider/tariff instance
-2. **Generic Routing Sensors**: Automatically route to the active provider (selected via `select.energy_price_tracker_active_provider`)
+## Sensors
 
 ### Generic Routing Sensors (Active Provider)
 
-These sensors automatically reflect the currently selected provider's data. Use these in your automations and dashboards for seamless provider switching:
+These sensors automatically reflect the currently selected provider's data:
 
-- **Active Provider Current Price** - `sensor.active_provider_current_price`
-  - Current electricity price from the selected provider
+| Sensor | Entity ID |
+|--------|-----------|
+| Active Provider Current Price | `sensor.active_provider_current_price` |
+| Active Provider Current Price with VAT | `sensor.active_provider_current_price_with_vat` |
+| Active Provider Today Max/Min Price | `sensor.active_provider_today_max_price` etc. |
+| Active Provider Tomorrow Max/Min Price | `sensor.active_provider_tomorrow_max_price` etc. |
+| Active Provider All Prices | `sensor.active_provider_all_prices` |
 
-- **Active Provider Current Price with VAT** - `sensor.active_provider_current_price_with_vat`
-  - Current price including VAT from the selected provider
-
-- **Active Provider Today Max Price** - `sensor.active_provider_today_max_price`
-- **Active Provider Today Max Price with VAT** - `sensor.active_provider_today_max_price_with_vat`
-- **Active Provider Today Min Price** - `sensor.active_provider_today_min_price`
-- **Active Provider Today Min Price with VAT** - `sensor.active_provider_today_min_price_with_vat`
-
-- **Active Provider All Prices** - `sensor.active_provider_all_prices`
-  - Complete price array with all attributes from the selected provider
-
-**Provider Selection:**
-- **Active Energy Provider** - `select.energy_price_tracker_active_provider`
-  - Select which provider's data to use in generic sensors
-  - Options are automatically populated from configured instances
+**Provider Selection:** `select.active_energy_provider`
 
 ### Provider-Specific Sensors
 
-For each configured instance, the integration creates the following sensors:
+For each configured instance:
 
-#### Price Sensors (with and without VAT)
+- **Current Price** / **Current Price with VAT**
+- **Today's Max/Min Price** (with and without VAT)
+- **Tomorrow's Max/Min Price** (with and without VAT) — includes `data_available` attribute
+- **Today Prices** / **Tomorrow Prices** / **All Prices** — full price arrays in attributes
 
-- **Current Price** - `sensor.{provider}_{tariff}_current_price`
-  - Current electricity price for the active time slot
-  - Updates every hour based on pricing schedule
+### Tomorrow Sensors
 
-- **Current Price with VAT** - `sensor.{provider}_{tariff}_current_price_with_vat`
-  - Current price including configured VAT rate
-
-### Min/Max Sensors
-
-- **Today's Maximum Price** - `sensor.{provider}_{tariff}_today_s_maximum_price`
-- **Today's Maximum Price with VAT** - `sensor.{provider}_{tariff}_today_s_maximum_price_with_vat`
-- **Today's Minimum Price** - `sensor.{provider}_{tariff}_today_s_minimum_price`
-- **Today's Minimum Price with VAT** - `sensor.{provider}_{tariff}_today_s_minimum_price_with_vat`
-
-### All Prices Sensor
-
-- **All Prices** - `sensor.{provider}_{tariff}_all_prices`
-  - Contains complete price array for today in attributes
-  - State shows count of available price points
-  - Attributes include:
-    - `prices`: Array of today's hourly prices
-    - `data_points_today`: Number of prices for today
-    - `data_points_total`: Total prices cached
-    - `first_timestamp`: First price timestamp
-    - `last_timestamp`: Last price timestamp
+Tomorrow's prices are typically published after ~13h. Before that, these sensors show "Unknown" with attribute `data_available: false`. This is expected behaviour.
 
 ## Services
 
-### `energy_price_tracker.refresh_data`
+### `portuguese_energy_price_tracker.refresh_data`
 
-Manually refresh energy price data from the source.
+Manually refresh energy price data.
 
-**Parameters:**
-- `date` (optional): Specific date to fetch data for (YYYY-MM-DD format)
-  - If not specified, fetches today's data
-  - Always bypasses cache
-
-**Examples:**
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `date` | No | Specific date (YYYY-MM-DD). Defaults to today. |
 
 ```yaml
 # Refresh today's data
-service: energy_price_tracker.refresh_data
+service: portuguese_energy_price_tracker.refresh_data
 
-# Fetch historical data for specific date
-service: energy_price_tracker.refresh_data
+# Fetch data for specific date
+service: portuguese_energy_price_tracker.refresh_data
 data:
-  date: "2025-11-16"
+  date: "2026-03-22"
 ```
 
 ## Data Source
 
-This integration fetches data directly from:
-- **Source**: [GitHub CSV Repository](https://github.com/tiagofelicia/tiagofelicia.github.io)
-- **File**: `data/precos-horarios.csv`
-- **Update Frequency**: CSV is typically updated daily with next-day prices
-- **Integration Refresh**: Every 5 minutes (configurable via SCAN_INTERVAL)
+This integration calculates prices from three data files maintained by Tiago Felícia:
 
-## Supported Providers & Tariffs
+| Data | Description |
+|------|-------------|
+| **OMIE Market Prices** | 15-minute interval OMIE prices + losses factors |
+| **Provider Constants** | Margins, fees, and loss factors per provider |
+| **Provider Formulas** | Calculation formulas per provider/tariff |
 
-### Coopérnico GO
-- Simples
-- Bi-horário - Ciclo Diário
-- Bi-horário - Ciclo Semanal
+Source: [HuggingFace - Simulador Tarifários Eletricidade](https://huggingface.co/spaces/tiagofelicia/simulador-tarifarios-eletricidade)
 
-### G9 Smart Dynamic
-- Simples
-- Bi-horário - Ciclo Diário
-- Bi-horário - Ciclo Semanal
+The integration fetches OMIE data (updated daily), applies provider-specific formulas and constants, and calculates the final price per 15-minute interval. Refresh interval: every 5 minutes.
 
-### Alfa Power Index BTN
-- Simples
-- Bi-horário - Ciclo Diário
-- Bi-horário - Ciclo Semanal
+## Automation Examples
 
-*Note: Provider and tariff availability depends on the CSV data source.*
-
-## Advanced Usage
-
-### Automation Examples
-
-#### Charge Battery When Price is Low
+### Charge Battery When Price is Low
 
 ```yaml
 automation:
   - alias: "Charge Battery - Low Price"
     trigger:
       - platform: numeric_state
-        entity_id: sensor.coopernico_energy_data_current_price_with_vat
-        below: 0.15  # EUR/kWh
+        entity_id: sensor.active_provider_current_price_with_vat
+        below: 0.15
     action:
       - service: switch.turn_on
         target:
           entity_id: switch.battery_charger
 ```
 
-#### Notify When Peak Price is Coming
+### Notify When Tomorrow's Prices Are Available
 
 ```yaml
 automation:
-  - alias: "Alert - Peak Price Soon"
+  - alias: "Tomorrow Prices Available"
     trigger:
-      - platform: template
-        value_template: >
-          {% set current = states('sensor.coopernico_energy_data_current_price_with_vat') | float %}
-          {% set max_price = states('sensor.coopernico_energy_data_today_s_maximum_price_with_vat') | float %}
-          {{ current >= (max_price * 0.9) }}
+      - platform: state
+        entity_id: sensor.active_provider_tomorrow_max_price
+        from: "unknown"
     action:
       - service: notify.mobile_app
         data:
-          message: "Peak electricity price in effect: {{ current }} EUR/kWh"
+          message: >
+            Tomorrow's prices available!
+            Max: {{ states('sensor.active_provider_tomorrow_max_price_with_vat') }} €/kWh
+            Min: {{ states('sensor.active_provider_tomorrow_min_price_with_vat') }} €/kWh
 ```
 
 ## Troubleshooting
 
 ### Sensors Show "Unknown"
 
-**Possible causes:**
-- No data available for today yet (CSV updated daily)
-- GitHub source is temporarily unavailable
-- Local cache is empty
+- **Tomorrow sensors before ~13h**: Expected — data not yet published
+- **All sensors**: Check logs at Settings > System > Logs (search for "portuguese_energy_price_tracker")
+- **After update**: Restart HA (not just reload) if you added new files
 
-**Solutions:**
-1. Check logs: `Settings → System → Logs` (search for "energy_price_tracker")
-2. Manually refresh: Call `energy_price_tracker.refresh_data` service
-3. Verify GitHub source is accessible: https://raw.githubusercontent.com/tiagofelicia/tiagofelicia.github.io/main/data/precos-horarios.csv
+### Sensors Show "Unavailable"
 
-### High Database Size Warning
-
-If you see warnings about sensor attributes exceeding 16KB:
-- This is normal for the `all_prices` sensor
-- The integration automatically filters to today's prices only
-- Older versions stored more data; update to latest version
-
-### Integration Not Loading
-
-**Check for:**
-1. Timezone comparison errors → Update to latest version (fixed in v2.0.0)
-2. Missing dependencies → Restart Home Assistant
-3. Configuration errors → Check Configuration → Integrations
-
-## Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+- Try reloading the integration: Settings > Devices & Services > ⋮ > Reload
+- If it persists, restart Home Assistant
 
 ## Credits
 
-This integration would not be possible without the amazing work of **[Tiago Felícia](https://github.com/tiagofelicia)**, who maintains the comprehensive Portuguese energy price dataset at [tiagofelicia.github.io](https://github.com/tiagofelicia/tiagofelicia.github.io).
+This integration is based on [joaofernandes/portuguese_energy_price_tracker_ha_integration](https://github.com/joaofernandes/portuguese_energy_price_tracker_ha_integration) and would not be possible without the work of **[Tiago Felícia](https://github.com/tiagofelicia)**, who maintains the comprehensive Portuguese energy price dataset.
 
-**Special thanks to Tiago Felícia for:**
+**Data source:** [tiagofelicia/simulador-tarifarios-eletricidade](https://huggingface.co/spaces/tiagofelicia/simulador-tarifarios-eletricidade)
 
-- Collecting and maintaining accurate hourly energy price data for multiple Portuguese providers
-- Providing the data in an accessible CSV format updated daily via GitHub
-- Making this data freely available to the community
-- Enabling developers to build tools like this integration
-
-The upstream data source can be found at: <https://github.com/tiagofelicia/tiagofelicia.github.io>
-
-**Data Providers Included:**
-
-- Coopérnico GO
-- G9 Smart Dynamic
-- Alfa Power Index
-- And more Portuguese energy providers
-
-Without Tiago's dedication to maintaining this data, this Home Assistant integration would not exist. Please consider starring his repository and supporting his work!
+Without Tiago's dedication to maintaining this data, this integration would not exist.
 
 ## License
 
@@ -298,10 +223,4 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and changes.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/joaofernandes/portuguese_energy_price_tracker_ha_integration/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/joaofernandes/portuguese_energy_price_tracker_ha_integration/discussions)
-- **Home Assistant Community**: [Community Forum Thread](https://community.home-assistant.io)
-
----
-
-**Disclaimer**: This integration relies on third-party data sources. Price accuracy and availability depend on the upstream CSV data provider. Always verify prices with your energy provider's official sources.
+- **Issues**: [GitHub Issues](https://github.com/fapgomes/portuguese_energy_price_tracker_ha_integration/issues)
