@@ -210,6 +210,7 @@ class HFDataFetcher:
         if count > 0:
             aggregates["OMIE_S_M"] = omie_sum / count
             aggregates["Perdas_Anual_S"] = perdas_sum / count
+            aggregates["Perdas_Anuais_S"] = perdas_sum / count  # alias used by Ibelectra formulas
             aggregates["Perdas_M_S"] = perdas_sum / count
 
         # Per-cycle per-period averages
@@ -234,6 +235,7 @@ class HFDataFetcher:
                 if cnt > 0:
                     aggregates[f"OMIE_{cycle}_M_{period_key}"] = o_sum / cnt
                     aggregates[f"Perdas_Anual_{cycle}_{period_key}"] = p_sum / cnt
+                    aggregates[f"Perdas_Anuais_{cycle}_{period_key}"] = p_sum / cnt  # alias
                     aggregates[f"Perdas_M_{cycle}_{period_key}"] = p_sum / cnt
 
         _LOGGER.debug(f"Monthly aggregates for {year}-{month:02d}: {len(aggregates)} values")

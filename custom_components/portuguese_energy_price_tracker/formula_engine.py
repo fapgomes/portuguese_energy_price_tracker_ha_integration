@@ -128,9 +128,17 @@ def _safe_eval_formula(formula: str, ctx: dict[str, float]) -> float | None:
         # Remove spaces
         expr = expr.replace(" ", "")
 
-        # Validate: only digits, dots, arithmetic ops, parentheses
-        if not re.match(r'^[\d.+\-*/()e\-]+$', expr):
-            _LOGGER.warning(f"Unsafe formula expression: {expr} (from: {formula})")
+        # Validate: only digits, dots, arithmetic ops, parentheses, and scientific notation
+        if not re.match(r'^[\d.+\-*/()eE]+$', expr):
+            # Check if there are unresolved variable names
+            unresolved = re.findall(r'[a-zA-Z_][a-zA-Z0-9_]*', expr)
+            if unresolved:
+                _LOGGER.warning(
+                    f"Unresolved variables in formula: {unresolved} "
+                    f"(expr: {expr}, formula: {formula})"
+                )
+            else:
+                _LOGGER.warning(f"Unsafe formula expression: {expr} (from: {formula})")
             return None
 
         result = eval(expr)  # noqa: S307 - validated to contain only arithmetic
