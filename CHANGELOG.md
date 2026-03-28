@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.2] - 2026-03-28
+
+### Fixed
+
+- **Provider name separator mismatch**: Indexados.csv uses `|` separator (e.g., `Plenitude | Tendência`) but const.py had `-`. Formula lookup now accepts both separators automatically
+- **TypeError on sensor startup**: Fixed crash when `current_price` is None in `extra_state_attributes` (sensor.py lines 159, 198)
+- **Updated provider names**: All provider names in const.py now match Indexados.csv exactly
+- **Migration v7 expanded**: Covers both old GitHub CSV names and v2.3.0 names with `-` separator
+
 ## [2.3.1] - 2026-03-22
 
 ### Fixed

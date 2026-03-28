@@ -129,10 +129,26 @@ class HFDataFetcher:
             opcao = (row.get("opcao_horaria_e_ciclo") or "").strip()
             formula = (row.get("formula_calculo") or "").strip()
             if nome and opcao and formula:
+                # Register under the original name
                 if nome not in formulas:
                     formulas[nome] = {}
                 if opcao not in formulas[nome]:
                     formulas[nome][opcao] = formula
+
+                # Also register under alternate separator (| <-> -)
+                # so both "Provider | Plan" and "Provider - Plan" work
+                if " | " in nome:
+                    alt_nome = nome.replace(" | ", " - ")
+                elif " - " in nome:
+                    alt_nome = nome.replace(" - ", " | ")
+                else:
+                    alt_nome = None
+
+                if alt_nome:
+                    if alt_nome not in formulas:
+                        formulas[alt_nome] = {}
+                    if opcao not in formulas[alt_nome]:
+                        formulas[alt_nome][opcao] = formula
 
         self._formulas = formulas
         _LOGGER.info(f"Loaded formulas for {len(formulas)} providers from HuggingFace")

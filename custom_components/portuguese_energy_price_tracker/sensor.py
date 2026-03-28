@@ -155,8 +155,8 @@ class EnergyPriceCurrentSensor(EnergyPriceBaseSensor):
         attrs = super().extra_state_attributes
 
         if self.coordinator.data:
-            current_price = self.coordinator.data.get("current_price", {})
-            if "period" in current_price:
+            current_price = self.coordinator.data.get("current_price")
+            if current_price and "period" in current_price:
                 attrs["period"] = current_price["period"]
 
         return attrs
@@ -194,8 +194,8 @@ class EnergyPriceCurrentVATSensor(EnergyPriceBaseSensor):
         attrs["vat_included"] = True
 
         if self.coordinator.data:
-            current_price = self.coordinator.data.get("current_price", {})
-            if "period" in current_price:
+            current_price = self.coordinator.data.get("current_price")
+            if current_price and "period" in current_price:
                 attrs["period"] = current_price["period"]
 
         return attrs
