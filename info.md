@@ -7,7 +7,7 @@ Track real-time electricity prices for Portuguese energy providers directly in H
 ⚡ **Real-time Prices** - Hourly electricity prices from multiple Portuguese providers
 📊 **Complete Data** - Current price, today's min/max, and full price arrays
 🔄 **Smart Caching** - 1-hour cache with offline fallback for reliability
-🏷️ **Multi-Provider** - Supports Coopérnico GO, G9 Smart Dynamic, Alfa Power Index
+🏷️ **Multi-Provider** - Supports Coopérnico GO, G9 Smart Dynamic SPOT 8!, Alfa Power Index
 💰 **Flexible VAT** - Configurable VAT rates with automatic calculations
 ⏱️ **Bi-Tariff Ready** - Compatible with Bi-horário Diário and Semanal tariffs
 

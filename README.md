@@ -11,7 +11,7 @@ A Home Assistant custom integration that tracks real-time electricity prices for
 ## Features
 
 - **Real-time Energy Prices**: Calculates electricity prices from OMIE market data + provider formulas
-- **23 Providers**: Supports all major Portuguese indexed energy providers
+- **21 Providers**: Supports all major Portuguese indexed energy providers
 - **Current & Future Data**: Access current prices, today's min/max, tomorrow's prices (available after ~13h)
 - **Multi-tariff Support**: Simples, Bi-horário, Tri-horário and high-voltage tariffs
 - **VAT Flexibility**: Configurable VAT rate (default 23%) with automatic price calculations
@@ -23,29 +23,27 @@ A Home Assistant custom integration that tracks real-time electricity prices for
 
 | Provider | Type | Tariffs |
 |----------|------|---------|
-| Alfa Energia - ALFA POWER INDEX BTN | Quarto-horário | Simples, Bi, Tri |
-| Coopérnico Base | Quarto-horário | Simples, Bi, Tri |
-| Coopérnico GO | Quarto-horário | Simples, Bi, Tri |
-| EDP - Eletricidade Indexada Horária | Quarto-horário | Simples, Bi, Tri |
-| EDP - Eletricidade Indexada Média | Média | Simples, Bi, Tri |
-| Endesa - Tarifa Indexada | Média | Simples, Bi |
-| EZU - Indexada | Quarto-horário | Simples, Bi, Tri |
-| G9 - Smart Dynamic | Quarto-horário | Simples, Bi, Tri |
-| G9 - Smart Dynamic (Empresarial) | Quarto-horário | Simples, Bi, Tri |
-| G9 - Smart Index | Média | Simples, Bi, Tri |
-| G9 - Smart Index (Empresarial) | Média | Simples, Bi, Tri |
-| Galp - Plano Flexível / Dinâmico | Quarto-horário | Simples, Bi, Tri |
-| Goldenergy - Tarifário Indexado 100% | Média | Simples |
-| **Ibelectra - Solução Amigo** | Média | Simples, Bi, Tri HV |
-| **Ibelectra - Solução Família** | Média | Simples, Bi, Tri HV |
-| Iberdrola - Simples Indexado | Média | Simples |
-| Iberdrola - Simples Indexado Dinâmico | Quarto-horário | Simples |
-| **Luzboa - BTN SPOTDEF** | Média | Simples, Bi, Tri |
-| **LUZiGÁS - Super Lig Index** | Média | Simples, Bi, Tri |
-| Meo Energia - Tarifa Variável | Quarto-horário | Simples, Bi, Tri HV |
-| Plenitude - Tendência | Quarto-horário | Simples |
-| Repsol - Leve PRO Sem Mais | Quarto-horário | Simples, Bi, Tri |
-| Repsol - Leve Sem Mais | Quarto-horário | Simples, Bi, Tri |
+| Alfa Energia \| ALFA POWER INDEX BTN | Quarto-horário | Simples, Bi, Tri |
+| Coopérnico \| Base | Quarto-horário | Simples, Bi, Tri |
+| Coopérnico \| GO | Quarto-horário | Simples, Bi, Tri |
+| EDP \| Eletricidade Indexada Horária | Quarto-horário | Simples, Bi, Tri |
+| EDP \| Eletricidade Indexada Média | Média | Simples, Bi, Tri |
+| Endesa \| Tarifa Indexada | Média | Simples, Bi |
+| EZU \| Indexada | Quarto-horário | Simples, Bi, Tri |
+| G9 \| Smart Dynamic SPOT 8! | Quarto-horário | Simples, Bi, Tri |
+| G9 \| Smart Dynamic SPOT 8! (Empresarial) | Quarto-horário | Simples, Bi, Tri |
+| Galp \| Plano Flexível / Dinâmico | Quarto-horário | Simples, Bi, Tri |
+| Goldenergy \| Tarifário Indexado 100% | Média | Simples |
+| **Ibelectra \| Solução Amigo** | Média | Simples, Bi, Tri HV |
+| **Ibelectra \| Solução Família** | Média | Simples, Bi, Tri HV |
+| Iberdrola \| Simples Indexado | Média | Simples |
+| Iberdrola \| Simples Indexado Dinâmico | Quarto-horário | Simples |
+| **Luzboa \| BTN SPOTDEF** | Média | Simples, Bi, Tri |
+| **LUZiGÁS \| Super Lig Index** | Média | Simples, Bi, Tri |
+| Meo Energia \| Tarifa Dinâmica | Quarto-horário | Simples, Bi, Tri HV |
+| Plenitude \| Tendência | Quarto-horário | Simples |
+| Repsol \| Leve PRO Sem Mais | Quarto-horário | Simples, Bi, Tri |
+| Repsol \| Leve Sem Mais | Quarto-horário | Simples, Bi, Tri |
 
 ## Installation
 

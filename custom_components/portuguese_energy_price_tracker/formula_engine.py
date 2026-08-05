@@ -70,6 +70,12 @@ def calculate_price(
         ctx["REPSOL_Q_Tarifa_PRO"] = constants.get("Repsol_Q_Tarifa_Pro", 0)
         ctx["Perdas_GE"] = monthly_agg.get("Perdas_M_S", 1.16)
 
+        # G9 formulas still reference the legacy variable names, but the data
+        # source now publishes the same values as G9_K1/K2/K3.
+        ctx["G9_FA"] = constants.get("G9_FA", constants.get("G9_K1", 1.02))
+        ctx["G9_CGS"] = constants.get("G9_CGS", constants.get("G9_K2", 0))
+        ctx["G9_AC"] = constants.get("G9_AC", constants.get("G9_K3", 0))
+
         # Handle multi-period formulas (e.g., Ibelectra bi-horário)
         # Format: "formula_V para Vazio; formula_FV para Fora Vazio"
         active_formula = _select_period_formula(formula, period_type)

@@ -66,7 +66,7 @@ async def _async_migrate_entities(hass: HomeAssistant, entry: ConfigEntry) -> No
     provider = entry.data.get("provider", "")
     tariff = entry.data.get("tariff", "")
     _LOGGER.info(f"[MIGRATION DEBUG] Provider: '{provider}', Tariff: '{tariff}'")
-    _LOGGER.info(f"[MIGRATION DEBUG] Will check for migrations v1-v6")
+    _LOGGER.info(f"[MIGRATION DEBUG] Will check for migrations v1-v8")
 
     # Version 1: Clean up duplicate select entities (v2.2.0+)
     if migration_version < 1:
@@ -405,6 +405,52 @@ async def _async_migrate_entities(hass: HomeAssistant, entry: ConfigEntry) -> No
 
         hass.config_entries.async_update_entry(entry, data=new_data)
         _LOGGER.info("Migration v7 complete")
+
+    # Version 8: Re-apply provider name migration for entries already on v7
+    # (upstream renamed the G9 tariffs to "Smart Dynamic SPOT 8!"), and repoint
+    # the existing unique_ids so entity_ids and their history survive renames.
+    if migration_version < 8:
+        from .const import PROVIDER_NAME_MIGRATION
+        _LOGGER.info("Running migration v8: Re-applying renamed provider names")
+
+        old_provider = entry.data.get("provider", "")
+        entry_tariff = entry.data.get("tariff", "")
+        new_provider = PROVIDER_NAME_MIGRATION.get(old_provider, old_provider)
+        new_data = {**entry.data, "migration_version": 8}
+
+        if new_provider != old_provider:
+            new_data["provider"] = new_provider
+            _LOGGER.info(f"Migrated provider name: '{old_provider}' → '{new_provider}'")
+
+            if entry_tariff:
+                old_prefix = f"{DOMAIN}_{old_provider}_{entry_tariff}_".lower().replace(" ", "_")
+                new_prefix = f"{DOMAIN}_{new_provider}_{entry_tariff}_".lower().replace(" ", "_")
+
+                for entity in list(entity_registry.entities.values()):
+                    if (entity.platform != DOMAIN or
+                            entity.config_entry_id != entry.entry_id or
+                            not entity.unique_id or
+                            not entity.unique_id.startswith(old_prefix)):
+                        continue
+
+                    new_unique_id = new_prefix + entity.unique_id[len(old_prefix):]
+
+                    # Never clobber an entity that already claims the new unique_id
+                    if entity_registry.async_get_entity_id(entity.domain, DOMAIN, new_unique_id):
+                        _LOGGER.info(
+                            f"Skipping {entity.entity_id}: unique_id {new_unique_id} already in use"
+                        )
+                        continue
+
+                    entity_registry.async_update_entity(
+                        entity.entity_id, new_unique_id=new_unique_id
+                    )
+                    _LOGGER.info(
+                        f"Repointed {entity.entity_id}: {entity.unique_id} → {new_unique_id}"
+                    )
+
+        hass.config_entries.async_update_entry(entry, data=new_data)
+        _LOGGER.info("Migration v8 complete")
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
