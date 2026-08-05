@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.3] - 2026-08-05
+
+### Fixed
+
+- **G9 tariffs had no prices at all**: G9 formulas reference `G9_FA`/`G9_CGS`/`G9_AC`, but Constantes.csv now publishes those values as `G9_K1`/`G9_K2`/`G9_K3` — formula evaluation failed with "Unresolved variables" and returned None. Added the aliases
+- **G9 tariff names renamed upstream**: `G9 | Smart Dynamic` → `G9 | Smart Dynamic SPOT 8!` (and the Empresarial variant). `PROVIDERS` now matches Indexados.csv exactly (21 tariffs)
+- **Migration v8**: entries already on v7 never re-ran the provider name migration, so renames could not reach existing installs. v8 re-applies it and repoints the entity `unique_id`s so entity_ids and their history survive the rename
+
+### Changed
+
+- **G9 Smart Index removed**: G9 consolidated its indexed offer and `G9 | Smart Index` / `G9 | Smart Index (Empresarial)` no longer exist in the data source. Existing config entries are migrated to the remaining `SPOT 8!` product (doméstico / empresarial respectively)
+- **README provider table**: updated to the `|` separator names actually used since v2.3.2, and provider count corrected to 21
+
 ## [2.3.2] - 2026-03-28
 
 ### Fixed
