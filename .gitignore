@@ -38,3 +38,6 @@ release_notes.md
 
 # Temporary data files
 *.xlsx
+
+# Planning and design records (kept locally only)
+docs/superpowers/
