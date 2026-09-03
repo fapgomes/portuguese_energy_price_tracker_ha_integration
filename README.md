@@ -222,3 +222,4 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and changes.
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/fapgomes/portuguese_energy_price_tracker_ha_integration/issues)
+- **Buy me a coffee**: if this integration is useful to you, consider [supporting the project](https://buymeacoffee.com/fapgomes) ☕
