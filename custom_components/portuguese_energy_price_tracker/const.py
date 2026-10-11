@@ -33,20 +33,8 @@ PROVIDERS: Final = {
             "TRIHORARIO_SEMANAL_HV",
         ],
     },
-    "Coopérnico | Base": {
-        "name": "Coopérnico | Base",
-        "tariffs": [
-            "SIMPLE",
-            "BIHORARIO_DIARIO",
-            "BIHORARIO_SEMANAL",
-            "TRIHORARIO_DIARIO",
-            "TRIHORARIO_DIARIO_HV",
-            "TRIHORARIO_SEMANAL",
-            "TRIHORARIO_SEMANAL_HV",
-        ],
-    },
-    "Coopérnico | GO": {
-        "name": "Coopérnico | GO",
+    "Coopérnico | Único": {
+        "name": "Coopérnico | Único",
         "tariffs": [
             "SIMPLE",
             "BIHORARIO_DIARIO",
@@ -103,18 +91,6 @@ PROVIDERS: Final = {
     },
     "G9 | Smart Dynamic SPOT 8!": {
         "name": "G9 | Smart Dynamic SPOT 8!",
-        "tariffs": [
-            "SIMPLE",
-            "BIHORARIO_DIARIO",
-            "BIHORARIO_SEMANAL",
-            "TRIHORARIO_DIARIO",
-            "TRIHORARIO_DIARIO_HV",
-            "TRIHORARIO_SEMANAL",
-            "TRIHORARIO_SEMANAL_HV",
-        ],
-    },
-    "G9 | Smart Dynamic SPOT 8! (Empresarial)": {
-        "name": "G9 | Smart Dynamic SPOT 8! (Empresarial)",
         "tariffs": [
             "SIMPLE",
             "BIHORARIO_DIARIO",
@@ -245,8 +221,8 @@ PROVIDERS: Final = {
 PROVIDER_NAME_MIGRATION: Final = {
     # Original GitHub CSV names
     "Alfa Power Index BTN": "Alfa Energia | ALFA POWER INDEX BTN",
-    "Coopérnico Base": "Coopérnico | Base",
-    "Coopérnico GO": "Coopérnico | GO",
+    "Coopérnico Base": "Coopérnico | Único",
+    "Coopérnico GO": "Coopérnico | Único",
     "EDP Indexada Horária": "EDP | Eletricidade Indexada Horária",
     "EZU Tarifa Coletiva": "EZU | Indexada",
     "EZU Tarifa Indexada": "EZU | Indexada",
@@ -261,9 +237,9 @@ PROVIDER_NAME_MIGRATION: Final = {
     "Endesa - Tarifa Indexada": "Endesa | Tarifa Indexada",
     "EZU - Indexada": "EZU | Indexada",
     "G9 - Smart Dynamic": "G9 | Smart Dynamic SPOT 8!",
-    "G9 - Smart Dynamic (Empresarial)": "G9 | Smart Dynamic SPOT 8! (Empresarial)",
+    "G9 - Smart Dynamic (Empresarial)": "G9 | Smart Dynamic SPOT 8!",
     "G9 - Smart Index": "G9 | Smart Dynamic SPOT 8!",
-    "G9 - Smart Index (Empresarial)": "G9 | Smart Dynamic SPOT 8! (Empresarial)",
+    "G9 - Smart Index (Empresarial)": "G9 | Smart Dynamic SPOT 8!",
     "Galp - Plano Flexível / Dinâmico": "Galp | Plano Flexível / Dinâmico",
     "Goldenergy - Tarifário Indexado 100%": "Goldenergy | Tarifário Indexado 100%",
     "Ibelectra - Solução Amigo": "Ibelectra | Solução Amigo",
@@ -280,9 +256,14 @@ PROVIDER_NAME_MIGRATION: Final = {
     # G9 consolidated its indexed offer: "Smart Index" no longer exists in the
     # data source, so it migrates to the only remaining G9 indexed tariff.
     "G9 | Smart Dynamic": "G9 | Smart Dynamic SPOT 8!",
-    "G9 | Smart Dynamic (Empresarial)": "G9 | Smart Dynamic SPOT 8! (Empresarial)",
+    "G9 | Smart Dynamic (Empresarial)": "G9 | Smart Dynamic SPOT 8!",
     "G9 | Smart Index": "G9 | Smart Dynamic SPOT 8!",
-    "G9 | Smart Index (Empresarial)": "G9 | Smart Dynamic SPOT 8! (Empresarial)",
+    "G9 | Smart Index (Empresarial)": "G9 | Smart Dynamic SPOT 8!",
+    # v2.4.0: upstream merged Coopérnico Base/GO into a single tariff and
+    # dropped the G9 Empresarial variant (same formula as the doméstico one).
+    "Coopérnico | Base": "Coopérnico | Único",
+    "Coopérnico | GO": "Coopérnico | Único",
+    "G9 | Smart Dynamic SPOT 8! (Empresarial)": "G9 | Smart Dynamic SPOT 8!",
 }
 
 # Tariff display names (internal codes)

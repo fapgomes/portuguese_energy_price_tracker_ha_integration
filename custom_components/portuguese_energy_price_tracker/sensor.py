@@ -22,6 +22,9 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+# Fields of the current interval exposed as attributes of the Current Price sensors
+CURRENT_PRICE_ATTRIBUTES = ("period", "provider_price", "spot_price", "tar_cost")
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -156,8 +159,10 @@ class EnergyPriceCurrentSensor(EnergyPriceBaseSensor):
 
         if self.coordinator.data:
             current_price = self.coordinator.data.get("current_price")
-            if current_price and "period" in current_price:
-                attrs["period"] = current_price["period"]
+            if current_price:
+                for key in CURRENT_PRICE_ATTRIBUTES:
+                    if key in current_price:
+                        attrs[key] = current_price[key]
 
         return attrs
 
@@ -195,8 +200,10 @@ class EnergyPriceCurrentVATSensor(EnergyPriceBaseSensor):
 
         if self.coordinator.data:
             current_price = self.coordinator.data.get("current_price")
-            if current_price and "period" in current_price:
-                attrs["period"] = current_price["period"]
+            if current_price:
+                for key in CURRENT_PRICE_ATTRIBUTES:
+                    if key in current_price:
+                        attrs[key] = current_price[key]
 
         return attrs
 
@@ -505,6 +512,9 @@ class EnergyPriceTodayPricesSensor(EnergyPriceBaseSensor):
                         "price_w_vat": p["price_w_vat"],
                         "market_price": p["market_price"],
                         "tar_cost": p["tar_cost"],
+                        "provider_price": p.get("provider_price"),
+                        "spot_price": p.get("spot_price"),
+                        "period": p.get("period"),
                     })
 
             attrs["prices"] = today_prices
@@ -566,6 +576,9 @@ class EnergyPriceTomorrowPricesSensor(EnergyPriceBaseSensor):
                         "price_w_vat": p["price_w_vat"],
                         "market_price": p["market_price"],
                         "tar_cost": p["tar_cost"],
+                        "provider_price": p.get("provider_price"),
+                        "spot_price": p.get("spot_price"),
+                        "period": p.get("period"),
                     })
 
             attrs["prices"] = tomorrow_prices
@@ -637,6 +650,9 @@ class EnergyPriceAllPricesSensor(EnergyPriceBaseSensor):
                         "price_w_vat": p["price_w_vat"],
                         "market_price": p["market_price"],
                         "tar_cost": p["tar_cost"],
+                        "provider_price": p.get("provider_price"),
+                        "spot_price": p.get("spot_price"),
+                        "period": p.get("period"),
                     })
                     today_count += 1
                 elif dt_obj.date() == tomorrow:
@@ -648,6 +664,9 @@ class EnergyPriceAllPricesSensor(EnergyPriceBaseSensor):
                         "price_w_vat": p["price_w_vat"],
                         "market_price": p["market_price"],
                         "tar_cost": p["tar_cost"],
+                        "provider_price": p.get("provider_price"),
+                        "spot_price": p.get("spot_price"),
+                        "period": p.get("period"),
                     })
                     tomorrow_count += 1
 

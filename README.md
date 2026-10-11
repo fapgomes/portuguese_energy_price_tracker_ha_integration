@@ -11,7 +11,7 @@ A Home Assistant custom integration that tracks real-time electricity prices for
 ## Features
 
 - **Real-time Energy Prices**: Calculates electricity prices from OMIE market data + provider formulas
-- **21 Providers**: Supports all major Portuguese indexed energy providers
+- **19 Providers**: Supports all major Portuguese indexed energy providers
 - **Current & Future Data**: Access current prices, today's min/max, tomorrow's prices (available after ~13h)
 - **Multi-tariff Support**: Simples, Bi-horário, Tri-horário and high-voltage tariffs
 - **VAT Flexibility**: Configurable VAT rate (default 23%) with automatic price calculations
@@ -24,14 +24,12 @@ A Home Assistant custom integration that tracks real-time electricity prices for
 | Provider | Type | Tariffs |
 |----------|------|---------|
 | Alfa Energia \| ALFA POWER INDEX BTN | Quarto-horário | Simples, Bi, Tri |
-| Coopérnico \| Base | Quarto-horário | Simples, Bi, Tri |
-| Coopérnico \| GO | Quarto-horário | Simples, Bi, Tri |
+| Coopérnico \| Único | Quarto-horário | Simples, Bi, Tri |
 | EDP \| Eletricidade Indexada Horária | Quarto-horário | Simples, Bi, Tri |
 | EDP \| Eletricidade Indexada Média | Média | Simples, Bi, Tri |
 | Endesa \| Tarifa Indexada | Média | Simples, Bi |
 | EZU \| Indexada | Quarto-horário | Simples, Bi, Tri |
 | G9 \| Smart Dynamic SPOT 8! | Quarto-horário | Simples, Bi, Tri |
-| G9 \| Smart Dynamic SPOT 8! (Empresarial) | Quarto-horário | Simples, Bi, Tri |
 | Galp \| Plano Flexível / Dinâmico | Quarto-horário | Simples, Bi, Tri |
 | Goldenergy \| Tarifário Indexado 100% | Média | Simples |
 | **Ibelectra \| Solução Amigo** | Média | Simples, Bi, Tri HV |
@@ -120,6 +118,25 @@ For each configured instance:
 ### Tomorrow Sensors
 
 Tomorrow's prices are typically published after ~13h. Before that, these sensors show "Unknown" with attribute `data_available: false`. This is expected behaviour.
+
+### Price Composition
+
+Each 15-minute price follows the upstream simulator:
+
+- `price` = provider component + TAR energy for the period + TSE financing (unless the provider already includes it), without VAT
+- `price_w_vat` = `price` with the configured VAT
+
+Each entry in the price arrays (and the Current Price sensors) also exposes:
+
+| Attribute | Description |
+|-----------|-------------|
+| `provider_price` | Provider component only (no TAR, TSE or VAT) |
+| `tar_cost` | TAR energy for the interval's period (no VAT) |
+| `period` | Tariff period of the interval: `S`, `V` (vazio), `F` (fora de vazio), `C` (cheias), `P` (ponta) |
+| `market_price` | OMIE price of the interval (€/kWh) |
+| `spot_price` | "Média" tariffs only: the full price if it followed the interval's OMIE |
+
+"Média" tariffs are billed on the average OMIE of the month, so their `price` uses the month-to-date average and only changes with the period's TAR. Quarter-hourly tariffs follow the OMIE of each interval.
 
 ## Services
 

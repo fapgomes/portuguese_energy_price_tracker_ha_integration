@@ -26,6 +26,8 @@ import aiohttp
 from homeassistant.util import dt as dt_util
 from homeassistant.util.file import write_utf8_file
 
+from .pricing import TariffFlags
+
 _LOGGER = logging.getLogger(__name__)
 
 HF_BASE = "https://huggingface.co/spaces/tiagofelicia/simulador-tarifarios-eletricidade/resolve/main/data/csv"
@@ -34,16 +36,9 @@ HF_OMIE_CSV = f"{HF_BASE}/OMIE_PERDAS_CICLOS.csv"
 HF_CONSTANTS_CSV = f"{HF_BASE}/Constantes.csv"
 HF_INDEXADOS_CSV = f"{HF_BASE}/Indexados.csv"
 
-# Period type mapping for tariff cycles
-PERIOD_COLUMNS = {
-    "SIMPLE": "Simp",
-    "BIHORARIO_DIARIO": "BD",
-    "BIHORARIO_SEMANAL": "BS",
-    "TRIHORARIO_DIARIO": "TD",
-    "TRIHORARIO_SEMANAL": "TS",
-    "TRIHORARIO_DIARIO_HV": "TD",
-    "TRIHORARIO_SEMANAL_HV": "TS",
-}
+
+def _is_true(value: str | None) -> bool:
+    return (value or "").strip().lower() == "true"
 
 
 class HFDataFetcher:
@@ -56,7 +51,7 @@ class HFDataFetcher:
         self._constants: dict[str, float] | None = None
         self._manifest: dict[str, str] | None = None
         self._omie_cache: dict[str, list[dict]] = {}  # date_key -> rows
-        self._formulas: dict[str, dict[str, str]] | None = None  # provider -> {tariff -> formula}
+        self._tariff_flags: dict[str, TariffFlags] | None = None  # provider -> flags
         self._omie_loaded = False
 
     async def _fetch_url(self, url: str, cache_name: str, max_retries: int = 3) -> str:
@@ -111,48 +106,30 @@ class HFDataFetcher:
         _LOGGER.info(f"Loaded {len(constants)} constants from HuggingFace")
         return constants
 
-    async def fetch_formulas(self) -> dict[str, dict[str, str]]:
-        """Fetch and parse provider formulas from Indexados.csv.
+    async def fetch_tariff_flags(self) -> dict[str, TariffFlags]:
+        """Fetch per-provider flags (TSE/TAR included) from Indexados.csv.
 
-        Returns: {provider_name: {tariff_option: formula_string}}
+        Returns: {provider_name: TariffFlags}
         """
-        if self._formulas:
-            return self._formulas
+        if self._tariff_flags:
+            return self._tariff_flags
 
         content = await self._fetch_url(HF_INDEXADOS_CSV, "hf_indexados.csv")
         content = self._strip_bom(content)
 
-        formulas: dict[str, dict[str, str]] = {}
+        flags: dict[str, TariffFlags] = {}
         reader = csv.DictReader(StringIO(content))
         for row in reader:
             nome = (row.get("nome") or "").strip()
-            opcao = (row.get("opcao_horaria_e_ciclo") or "").strip()
-            formula = (row.get("formula_calculo") or "").strip()
-            if nome and opcao and formula:
-                # Register under the original name
-                if nome not in formulas:
-                    formulas[nome] = {}
-                if opcao not in formulas[nome]:
-                    formulas[nome][opcao] = formula
+            if nome and nome not in flags:
+                flags[nome] = TariffFlags(
+                    tse_included=_is_true(row.get("financiamento_tse_incluido")),
+                    tar_included=_is_true(row.get("tar_incluida_energia")),
+                )
 
-                # Also register under alternate separator (| <-> -)
-                # so both "Provider | Plan" and "Provider - Plan" work
-                if " | " in nome:
-                    alt_nome = nome.replace(" | ", " - ")
-                elif " - " in nome:
-                    alt_nome = nome.replace(" - ", " | ")
-                else:
-                    alt_nome = None
-
-                if alt_nome:
-                    if alt_nome not in formulas:
-                        formulas[alt_nome] = {}
-                    if opcao not in formulas[alt_nome]:
-                        formulas[alt_nome][opcao] = formula
-
-        self._formulas = formulas
-        _LOGGER.info(f"Loaded formulas for {len(formulas)} providers from HuggingFace")
-        return formulas
+        self._tariff_flags = flags
+        _LOGGER.info(f"Loaded tariff flags for {len(flags)} providers from HuggingFace")
+        return flags
 
     async def load_omie_data(self) -> None:
         """Fetch and parse the full OMIE CSV into memory, indexed by date."""
@@ -186,81 +163,28 @@ class HFDataFetcher:
         date_key = target_date.strftime("%Y-%m-%d")
         return self._omie_cache.get(date_key, [])
 
-    def compute_monthly_aggregates(self, target_date: datetime) -> dict[str, float]:
-        """Compute monthly average OMIE and Perdas from cached data.
+    def get_month_to_date_rows(self, target_date: datetime) -> list[dict]:
+        """OMIE rows from the 1st of target_date's month up to and including target_date."""
+        rows: list[dict] = []
+        for day in range(1, target_date.day + 1):
+            date_key = f"{target_date.year:04d}-{target_date.month:02d}-{day:02d}"
+            rows.extend(self._omie_cache.get(date_key, []))
+        return rows
 
-        Returns a dict with keys like:
-        - OMIE_S_M: monthly avg OMIE for Simples
-        - OMIE_BD_M_V: monthly avg OMIE for Bi-Diário Vazio
-        - Perdas_Anual_S: monthly avg Perdas for Simples
-        - Perdas_Anual_BD_V: monthly avg Perdas for Bi-Diário Vazio
-        """
-        month = target_date.month
-        year = target_date.year
-
-        month_rows = []
-        for date_key, rows in self._omie_cache.items():
-            try:
-                dt = datetime.strptime(date_key, "%Y-%m-%d")
-                if dt.month == month and dt.year == year:
-                    month_rows.extend(rows)
-            except ValueError:
-                continue
-
-        if not month_rows:
-            _LOGGER.warning(f"No OMIE data for month {year}-{month:02d}")
-            return {}
-
-        aggregates: dict[str, float] = {}
-
-        # Overall Simples average (all intervals)
-        omie_sum, perdas_sum, count = 0.0, 0.0, 0
-        for row in month_rows:
-            try:
-                omie_sum += float(row.get("OMIE", 0))
-                perdas_sum += float(row.get("Perdas", 1))
-                count += 1
-            except (ValueError, TypeError):
-                continue
-
-        if count > 0:
-            aggregates["OMIE_S_M"] = omie_sum / count
-            aggregates["Perdas_Anual_S"] = perdas_sum / count
-            aggregates["Perdas_Anuais_S"] = perdas_sum / count  # alias used by Ibelectra formulas
-            aggregates["Perdas_M_S"] = perdas_sum / count
-
-        # Per-cycle per-period averages
-        cycle_periods = {
-            "BD": {"V": "V", "FV": "F"},
-            "BS": {"V": "V", "FV": "F"},
-            "TD": {"V": "V", "C": "C", "P": "P"},
-            "TS": {"V": "V", "C": "C", "P": "P"},
-        }
-
-        for cycle, period_map in cycle_periods.items():
-            for period_key, period_value in period_map.items():
-                o_sum, p_sum, cnt = 0.0, 0.0, 0
-                for row in month_rows:
-                    if row.get(cycle, "").strip() == period_value:
-                        try:
-                            o_sum += float(row.get("OMIE", 0))
-                            p_sum += float(row.get("Perdas", 1))
-                            cnt += 1
-                        except (ValueError, TypeError):
-                            continue
-                if cnt > 0:
-                    aggregates[f"OMIE_{cycle}_M_{period_key}"] = o_sum / cnt
-                    aggregates[f"Perdas_Anual_{cycle}_{period_key}"] = p_sum / cnt
-                    aggregates[f"Perdas_Anuais_{cycle}_{period_key}"] = p_sum / cnt  # alias
-                    aggregates[f"Perdas_M_{cycle}_{period_key}"] = p_sum / cnt
-
-        _LOGGER.debug(f"Monthly aggregates for {year}-{month:02d}: {len(aggregates)} values")
-        return aggregates
+    def get_year_rows(self, year: int) -> list[dict]:
+        """All OMIE rows of a calendar year."""
+        prefix = f"{year:04d}-"
+        return [
+            row
+            for date_key, rows in self._omie_cache.items()
+            if date_key.startswith(prefix)
+            for row in rows
+        ]
 
     def invalidate_cache(self):
         """Clear all cached data to force re-fetch."""
         self._constants = None
         self._manifest = None
-        self._formulas = None
+        self._tariff_flags = None
         self._omie_cache.clear()
         self._omie_loaded = False
