@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-10-11
+
+### Fixed
+
+- **No prices for any tariff**: upstream removed the `formula_calculo` column from Indexados.csv on 2026-10-10. The tariff formulas are now part of the integration (`tariffs.py`, ported from the upstream simulator's `calculos.py`) instead of being read from the data source
+- **TAR missing from prices since v2.3.0**: `price` did not include the regulated network tariff (`tar_cost` was always 0). Prices now include TAR energy for the interval's period and the TSE financing (unless the provider already includes it), as in the upstream simulator
+- **Quarter-hourly tariffs ~35x too low**: formulas multiplied each 15-min price by the BTN profile factor (`Perfil_BTN`), which upstream only uses to weight averages
+- **"Indexado Média" tariffs followed the interval OMIE**: they now use the month-to-date average OMIE for the period, which is what is billed (Luzboa: mean of the per-interval price; LUZiGÁS: Simples average with annual losses)
+- **Endesa bi-horário had no prices**: its formula used an unsupported period separator
+- **Data loaded only once per HA start**: tomorrow's prices only appeared after a restart and the monthly averages never updated. The integration now checks the upstream `manifest.json` once an hour and reloads the files that changed
+- **Missing constants silently became 0**: a constant missing from Constantes.csv now logs a warning naming it and the tariff shows "Unknown" instead of a wrong price
+
+### Changed
+
+- **`price` / `price_w_vat` values increase** by TAR + TSE (about +0.063 €/kWh on Simples before VAT). Long-term statistics will show this step
+- **Coopérnico Base / GO merged upstream** into `Coopérnico | Único`; **G9 SPOT 8! (Empresarial)** no longer exists upstream. Migration v9 moves existing entries to `Coopérnico | Único` and `G9 | Smart Dynamic SPOT 8!` (same formula) and keeps their entity history
+- Supported providers: 19
+
+### Added
+
+- Per-interval attributes `provider_price` (provider component only), `spot_price` ("Média" tariffs: price if it followed the interval OMIE) and `period` (S/V/F/C/P), in the price arrays and on the Current Price sensors
+- Test suite (`tests/`, pytest) covering every supported tariff, price composition and the migration map
+
 ## [2.3.3] - 2026-08-05
 
 ### Fixed
