@@ -17,6 +17,7 @@ import asyncio
 import csv
 import json
 import logging
+import time
 from datetime import datetime, timedelta
 from io import StringIO
 from pathlib import Path
@@ -36,6 +37,10 @@ HF_OMIE_CSV = f"{HF_BASE}/OMIE_PERDAS_CICLOS.csv"
 HF_CONSTANTS_CSV = f"{HF_BASE}/Constantes.csv"
 HF_INDEXADOS_CSV = f"{HF_BASE}/Indexados.csv"
 
+# manifest.json holds a hash per upstream file; it is checked at most this
+# often (seconds), upstream data changes a few times a day
+MANIFEST_CHECK_INTERVAL = 3600
+
 
 def _is_true(value: str | None) -> bool:
     return (value or "").strip().lower() == "true"
@@ -49,7 +54,8 @@ class HFDataFetcher:
         self.data_dir = data_dir
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self._constants: dict[str, float] | None = None
-        self._manifest: dict[str, str] | None = None
+        self._manifest: dict[str, Any] | None = None
+        self._manifest_checked: float | None = None  # time.monotonic()
         self._omie_cache: dict[str, list[dict]] = {}  # date_key -> rows
         self._tariff_flags: dict[str, TariffFlags] | None = None  # provider -> flags
         self._omie_loaded = False
@@ -181,10 +187,61 @@ class HFDataFetcher:
             for row in rows
         ]
 
+    async def _fetch_manifest(self) -> dict[str, Any] | None:
+        """Fetch manifest.json once, without retries; None on failure."""
+        try:
+            async with self.session.get(
+                HF_MANIFEST, timeout=aiohttp.ClientTimeout(total=30), allow_redirects=True
+            ) as response:
+                if response.status != 200:
+                    raise Exception(f"HTTP {response.status}")
+                return json.loads(await response.text())
+        except Exception as err:
+            _LOGGER.debug(f"Could not check HuggingFace manifest: {err}")
+            return None
+
+    async def refresh_if_changed(self, force: bool = False) -> bool:
+        """Drop the cached files whose hash in manifest.json changed.
+
+        They are fetched again on next use. Returns True if anything was
+        dropped. If the manifest cannot be fetched, the current data is kept.
+        """
+        now = time.monotonic()
+        if (
+            not force
+            and self._manifest_checked is not None
+            and now - self._manifest_checked < MANIFEST_CHECK_INTERVAL
+        ):
+            return False
+        self._manifest_checked = now
+
+        manifest = await self._fetch_manifest()
+        if manifest is None:
+            return False
+        previous, self._manifest = self._manifest, manifest
+        if previous is None:
+            return False
+
+        changed = [
+            key
+            for key in ("Constantes", "Indexados", "OMIE_PERDAS_CICLOS")
+            if manifest.get(key) != previous.get(key)
+        ]
+        if "Constantes" in changed:
+            self._constants = None
+        if "Indexados" in changed:
+            self._tariff_flags = None
+        if "OMIE_PERDAS_CICLOS" in changed:
+            self._omie_loaded = False
+        if changed:
+            _LOGGER.info(f"HuggingFace data changed ({', '.join(changed)}), reloading")
+        return bool(changed)
+
     def invalidate_cache(self):
         """Clear all cached data to force re-fetch."""
         self._constants = None
         self._manifest = None
+        self._manifest_checked = None
         self._tariff_flags = None
         self._omie_cache.clear()
         self._omie_loaded = False

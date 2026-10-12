@@ -54,6 +54,10 @@ class CSVDataCache:
         self._cache[date_key] = data
         self._cache_times[date_key] = datetime.now()
 
+    def clear(self):
+        self._cache.clear()
+        self._cache_times.clear()
+
 
 class CSVDataFetcher:
     """Fetcher for energy price data using HuggingFace OMIE data + tariffs.py formulas."""
@@ -95,6 +99,10 @@ class CSVDataFetcher:
 
         date_key = target_date.strftime("%Y-%m-%d")
         cache_key = f"{provider}_{tariff}"
+
+        # Prices computed from HuggingFace data that has since changed are stale
+        if await self.hf.refresh_if_changed(force=bypass_cache):
+            self.cache.clear()
 
         # Check memory cache
         if not bypass_cache:

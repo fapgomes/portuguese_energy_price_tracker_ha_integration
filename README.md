@@ -170,7 +170,7 @@ This integration calculates prices from three data files maintained by Tiago Fel
 
 Source: [HuggingFace - Simulador Tarifários Eletricidade](https://huggingface.co/spaces/tiagofelicia/simulador-tarifarios-eletricidade)
 
-The integration fetches OMIE data (updated daily), applies provider-specific formulas and constants, and calculates the final price per 15-minute interval. Refresh interval: every 5 minutes.
+The integration fetches OMIE data (updated daily), applies provider-specific formulas and constants, and calculates the final price per 15-minute interval. Refresh interval: every 5 minutes. Once an hour it checks the upstream `manifest.json` (a hash per file) and only downloads the files that changed, so tomorrow's prices (up to ~1h after publication) and the monthly averages update without restarting Home Assistant.
 
 ## Automation Examples
 

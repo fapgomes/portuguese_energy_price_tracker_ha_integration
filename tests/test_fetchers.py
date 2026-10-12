@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from datetime import datetime
 from pathlib import Path
 
@@ -9,7 +10,13 @@ import pytest
 
 from conftest import FIXTURES, TZ
 from pept.csv_fetcher import CSVDataFetcher
-from pept.hf_fetcher import HF_CONSTANTS_CSV, HF_INDEXADOS_CSV, HF_OMIE_CSV, HFDataFetcher
+from pept.hf_fetcher import (
+    HF_CONSTANTS_CSV,
+    HF_INDEXADOS_CSV,
+    HF_MANIFEST,
+    HF_OMIE_CSV,
+    HFDataFetcher,
+)
 from pept.pricing import TariffFlags
 
 INDEXADOS = (
@@ -25,9 +32,9 @@ INDEXADOS = (
 OMIE_HEADER = "﻿Data,Hora,Simp,BD,BS,TD,TS,BTN_A,BTN_B,BTN_C,OMIE,Perdas,ERC\n"
 
 
-def omie_csv() -> str:
+def omie_csv(days=((1, 40.0), (2, 80.0), (3, 500.0))) -> str:
     lines = [OMIE_HEADER]
-    for day, omie in ((1, 40.0), (2, 80.0), (3, 500.0)):
+    for day, omie in days:
         for hh in range(24):
             for mm in (0, 15, 30, 45):
                 period = "V" if hh < 8 else "F"
@@ -39,8 +46,8 @@ def omie_csv() -> str:
 
 
 class FakeResponse:
-    def __init__(self, body: str):
-        self.status = 200
+    def __init__(self, body: str | None):
+        self.status = 200 if body is not None else 500
         self._body = body
 
     async def text(self):
@@ -60,11 +67,20 @@ class FakeSession:
             HF_CONSTANTS_CSV: (FIXTURES / "Constantes.csv").read_text(encoding="utf-8"),
             HF_OMIE_CSV: omie_csv(),
         }
+        self.set_manifest(constantes="c1", indexados="i1", omie="o1")
         self.urls: list[str] = []
 
     def get(self, url, **kwargs):
         self.urls.append(url)
         return FakeResponse(self.bodies[url])
+
+    def set_manifest(self, constantes: str, indexados: str, omie: str):
+        self.bodies[HF_MANIFEST] = json.dumps(
+            {"Constantes": constantes, "Indexados": indexados, "OMIE_PERDAS_CICLOS": omie}
+        )
+
+    def count(self, url: str) -> int:
+        return self.urls.count(url)
 
 
 def run(coro):
@@ -116,3 +132,67 @@ def test_get_prices_missing_constant_returns_empty(tmp_path: Path, caplog):
     ))
     assert prices == []
     assert "Iberdrola_mFRR" in caplog.text
+
+
+IBERDROLA = ("Iberdrola | Simples Indexado", "SIMPLE", 23)
+
+
+def test_unchanged_manifest_keeps_data(tmp_path: Path):
+    session = FakeSession()
+    fetcher = CSVDataFetcher(session, tmp_path)
+    run(fetcher.get_prices(*IBERDROLA, target_date=datetime(2026, 10, 2, tzinfo=TZ)))
+    run(fetcher.get_prices(*IBERDROLA, target_date=datetime(2026, 10, 2, tzinfo=TZ), bypass_cache=True))
+    assert session.count(HF_MANIFEST) == 2
+    assert session.count(HF_OMIE_CSV) == 1
+    assert session.count(HF_CONSTANTS_CSV) == 1
+
+
+def test_changed_omie_is_reloaded(tmp_path: Path):
+    """Tomorrow's prices appear once the upstream OMIE file changes."""
+    session = FakeSession()
+    fetcher = CSVDataFetcher(session, tmp_path)
+    assert run(fetcher.get_prices(*IBERDROLA, target_date=datetime(2026, 10, 4, tzinfo=TZ))) == []
+
+    session.bodies[HF_OMIE_CSV] = omie_csv(((1, 40.0), (2, 80.0), (3, 500.0), (4, 100.0)))
+    session.set_manifest(constantes="c1", indexados="i1", omie="o2")
+    prices = run(fetcher.get_prices(*IBERDROLA, target_date=datetime(2026, 10, 4, tzinfo=TZ), bypass_cache=True))
+    assert len(prices) == 96
+    assert session.count(HF_OMIE_CSV) == 2
+    assert session.count(HF_CONSTANTS_CSV) == 1
+    assert session.count(HF_INDEXADOS_CSV) == 1
+
+
+def test_changed_data_clears_cached_prices(tmp_path: Path):
+    session = FakeSession()
+    fetcher = CSVDataFetcher(session, tmp_path)
+    day = datetime(2026, 10, 2, tzinfo=TZ)
+    before = run(fetcher.get_prices(*IBERDROLA, target_date=day))
+
+    session.bodies[HF_OMIE_CSV] = omie_csv(((1, 40.0), (2, 160.0)))
+    session.set_manifest(constantes="c1", indexados="i1", omie="o2")
+    fetcher.hf._manifest_checked = None  # past the check interval
+    after = run(fetcher.get_prices(*IBERDROLA, target_date=day))
+    # Month-to-date mean went from 60 to 100 €/MWh
+    assert after[0]["provider_price"] - before[0]["provider_price"] == pytest.approx(0.04 * 1.1674, abs=1e-5)
+
+
+def test_manifest_check_is_throttled(tmp_path: Path):
+    session = FakeSession()
+    hf = HFDataFetcher(session, tmp_path)
+    run(hf.refresh_if_changed())
+    session.set_manifest(constantes="c2", indexados="i1", omie="o1")
+    assert run(hf.refresh_if_changed()) is False
+    assert session.count(HF_MANIFEST) == 1
+    assert run(hf.refresh_if_changed(force=True)) is True
+    assert hf._constants is None
+
+
+def test_manifest_failure_keeps_data(tmp_path: Path):
+    session = FakeSession()
+    fetcher = CSVDataFetcher(session, tmp_path)
+    day = datetime(2026, 10, 2, tzinfo=TZ)
+    run(fetcher.get_prices(*IBERDROLA, target_date=day))
+    session.bodies[HF_MANIFEST] = None
+    prices = run(fetcher.get_prices(*IBERDROLA, target_date=day, bypass_cache=True))
+    assert len(prices) == 96
+    assert session.count(HF_OMIE_CSV) == 1
