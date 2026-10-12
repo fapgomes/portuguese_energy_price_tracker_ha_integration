@@ -835,6 +835,19 @@ class ActiveProviderBaseSensor(SensorEntity):
 
         return attrs
 
+    def _current_price_attributes(self, suffix: str) -> dict[str, Any]:
+        """CURRENT_PRICE_ATTRIBUTES of the active provider's sensor."""
+        attrs: dict[str, Any] = {}
+        entity_id = self._get_active_provider_entity(suffix)
+        if entity_id:
+            state = self._hass.states.get(entity_id)
+            if state and state.attributes:
+                for key in CURRENT_PRICE_ATTRIBUTES:
+                    if key in state.attributes:
+                        attrs[key] = state.attributes[key]
+
+        return attrs
+
 
 class ActiveProviderCurrentSensor(ActiveProviderBaseSensor):
     """Generic sensor for active provider's current price (no VAT)."""
@@ -860,6 +873,13 @@ class ActiveProviderCurrentSensor(ActiveProviderBaseSensor):
                 return None
         return None
 
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return additional attributes."""
+        attrs = super().extra_state_attributes
+        attrs.update(self._current_price_attributes("current_price"))
+        return attrs
+
 
 class ActiveProviderCurrentVATSensor(ActiveProviderBaseSensor):
     """Generic sensor for active provider's current price with VAT."""
@@ -884,6 +904,13 @@ class ActiveProviderCurrentVATSensor(ActiveProviderBaseSensor):
             except (ValueError, TypeError):
                 return None
         return None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return additional attributes."""
+        attrs = super().extra_state_attributes
+        attrs.update(self._current_price_attributes("current_price_with_vat"))
+        return attrs
 
 
 class ActiveProviderTodayMaxSensor(ActiveProviderBaseSensor):

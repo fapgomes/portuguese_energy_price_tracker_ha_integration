@@ -126,7 +126,7 @@ Each 15-minute price follows the upstream simulator:
 - `price` = provider component + TAR energy for the period + TSE financing (unless the provider already includes it), without VAT
 - `price_w_vat` = `price` with the configured VAT
 
-Each entry in the price arrays (and the Current Price sensors) also exposes:
+Each entry in the price arrays (and the Current Price sensors, including the Active Provider ones) also exposes:
 
 | Attribute | Description |
 |-----------|-------------|
