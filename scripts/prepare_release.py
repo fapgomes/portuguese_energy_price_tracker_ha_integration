@@ -21,17 +21,18 @@ from pathlib import Path
 
 
 def update_manifest(version: str, manifest_path: Path) -> bool:
-    """Update version in manifest.json."""
+    """Update version in manifest.json, keeping the rest of the file as is."""
     try:
         with open(manifest_path, 'r') as f:
-            manifest = json.load(f)
+            content = f.read()
 
-        old_version = manifest.get('version', 'unknown')
-        manifest['version'] = version
+        old_version = json.loads(content).get('version', 'unknown')
+        content, count = re.subn(r'("version":\s*")[^"]*(")', rf'\g<1>{version}\g<2>', content, count=1)
+        if count != 1:
+            raise ValueError("no \"version\" key")
 
         with open(manifest_path, 'w') as f:
-            json.dump(manifest, f, indent=2)
-            f.write('\n')
+            f.write(content)
 
         print(f"✓ Updated manifest.json: {old_version} → {version}")
         return True
