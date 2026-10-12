@@ -14,6 +14,7 @@ Data Source Credits:
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -68,6 +69,8 @@ class CSVDataFetcher:
         self.cache = CSVDataCache()
         self.hf = HFDataFetcher(session, data_dir)
         self._warned_unlisted: set[str] = set()
+        # Shared by all config entries; one load of the HuggingFace data at a time
+        self._hf_lock = asyncio.Lock()
 
     async def get_prices(
         self,
@@ -100,9 +103,10 @@ class CSVDataFetcher:
         date_key = target_date.strftime("%Y-%m-%d")
         cache_key = f"{provider}_{tariff}"
 
-        # Prices computed from HuggingFace data that has since changed are stale
-        if await self.hf.refresh_if_changed(force=bypass_cache):
-            self.cache.clear()
+        async with self._hf_lock:
+            # Prices computed from HuggingFace data that has since changed are stale
+            if await self.hf.refresh_if_changed(force=bypass_cache):
+                self.cache.clear()
 
         # Check memory cache
         if not bypass_cache:
@@ -111,11 +115,10 @@ class CSVDataFetcher:
                 _LOGGER.debug(f"Using cached prices for {cache_key} on {date_key}")
                 return cached[cache_key]
 
-        # Ensure OMIE data is loaded
-        await self.hf.load_omie_data()
-
-        constants = await self.hf.fetch_constants()
-        tariff_flags = await self.hf.fetch_tariff_flags()
+        async with self._hf_lock:
+            await self.hf.load_omie_data()
+            constants = await self.hf.fetch_constants()
+            tariff_flags = await self.hf.fetch_tariff_flags()
 
         flags = tariff_flags.get(provider)
         if flags is None:

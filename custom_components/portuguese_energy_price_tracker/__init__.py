@@ -43,6 +43,9 @@ def _set_logger_level(enable_debug: bool) -> None:
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.SELECT]
 
+# hass.data key of the CSVDataFetcher shared by all config entries
+SHARED_FETCHER_KEY = f"{DOMAIN}_fetcher"
+
 # Service schema for data refresh with optional date
 SERVICE_REFRESH_DATA = "refresh_data"
 SERVICE_REFRESH_SCHEMA = vol.Schema({
@@ -570,9 +573,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         hass.data[DOMAIN].pop(entry.entry_id)
 
-    # Remove service if no more entries
+    # Remove service and shared fetcher if no more entries
     if not hass.data[DOMAIN]:
         hass.services.async_remove(DOMAIN, SERVICE_REFRESH_DATA)
+        hass.data.pop(SHARED_FETCHER_KEY, None)
 
     return unload_ok
 
@@ -590,6 +594,16 @@ async def async_remove_entry(_hass: HomeAssistant, entry: ConfigEntry) -> None:
     )
 
 
+def _get_shared_fetcher(hass: HomeAssistant) -> CSVDataFetcher:
+    """One fetcher for all config entries, so the HuggingFace data is loaded once."""
+    fetcher = hass.data.get(SHARED_FETCHER_KEY)
+    if fetcher is None:
+        session = async_get_clientsession(hass)
+        data_dir = Path(hass.config.config_dir) / "custom_components" / DOMAIN / "data"
+        fetcher = hass.data[SHARED_FETCHER_KEY] = CSVDataFetcher(session, data_dir)
+    return fetcher
+
+
 class EnergyPriceCoordinator(DataUpdateCoordinator):
     """Class to manage fetching energy price data from GitHub CSV."""
 
@@ -602,10 +616,7 @@ class EnergyPriceCoordinator(DataUpdateCoordinator):
         self.vat = entry.data.get("vat", 23)
         self.include_vat = entry.data.get("include_vat", True)
 
-        # Initialize CSV fetcher
-        session = async_get_clientsession(hass)
-        data_dir = Path(hass.config.config_dir) / "custom_components" / DOMAIN / "data"
-        self.csv_fetcher = CSVDataFetcher(session, data_dir)
+        self.csv_fetcher = _get_shared_fetcher(hass)
 
         super().__init__(
             hass,

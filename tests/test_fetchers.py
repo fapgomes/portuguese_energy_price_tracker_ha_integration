@@ -51,6 +51,7 @@ class FakeResponse:
         self._body = body
 
     async def text(self):
+        await asyncio.sleep(0)  # yield like a real download
         return self._body
 
     async def __aenter__(self):
@@ -196,3 +197,23 @@ def test_manifest_failure_keeps_data(tmp_path: Path):
     prices = run(fetcher.get_prices(*IBERDROLA, target_date=day, bypass_cache=True))
     assert len(prices) == 96
     assert session.count(HF_OMIE_CSV) == 1
+
+
+def test_concurrent_entries_load_data_once(tmp_path: Path):
+    """Config entries share one fetcher; concurrent first updates must not each download the data."""
+    session = FakeSession()
+    fetcher = CSVDataFetcher(session, tmp_path)
+    day = datetime(2026, 10, 2, tzinfo=TZ)
+
+    async def both():
+        return await asyncio.gather(
+            fetcher.get_prices(*IBERDROLA, target_date=day),
+            fetcher.get_prices("EDP | Eletricidade Indexada Horária", "SIMPLE", 23, target_date=day),
+        )
+
+    iberdrola, edp = run(both())
+    assert len(iberdrola) == len(edp) == 96
+    assert session.count(HF_OMIE_CSV) == 1
+    assert session.count(HF_CONSTANTS_CSV) == 1
+    assert session.count(HF_INDEXADOS_CSV) == 1
+    assert session.count(HF_MANIFEST) == 1
