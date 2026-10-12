@@ -59,7 +59,8 @@ jobs:
         run: |
           VERSION=${{ steps.version.outputs.version }}
 
-          # Extract the [Unreleased] section from CHANGELOG.md
+          # Extract this version's section from CHANGELOG.md (prepare_release.py
+          # moves [Unreleased] there), falling back to [Unreleased]
           python3 << 'EOF' > release_notes.md
           import re
           import sys
@@ -70,10 +71,10 @@ jobs:
               with open('CHANGELOG.md', 'r') as f:
                   content = f.read()
 
-              # Find the [Unreleased] section
-              # Pattern: ## [Unreleased] followed by content until next ## section
-              pattern = r'## \[Unreleased\](.*?)(?=\n## \[|$)'
-              match = re.search(pattern, content, re.DOTALL)
+              # Pattern: ## [<version>] or ## [Unreleased], content until next ## section
+              match = re.search(rf'## \[{re.escape(version)}\][^\n]*(.*?)(?=\n## \[|$)', content, re.DOTALL)
+              if not match or not match.group(1).strip():
+                  match = re.search(r'## \[Unreleased\](.*?)(?=\n## \[|$)', content, re.DOTALL)
 
               if match:
                   changelog = match.group(1).strip()
@@ -90,12 +91,12 @@ jobs:
           **Installation via HACS:**
           1. Go to HACS → Integrations
           2. Click three dots → Custom repositories
-          3. Add: `joaofernandes/portuguese_energy_price_tracker_ha_integration`
+          3. Add: `fapgomes/portuguese_energy_price_tracker_ha_integration`
           4. Category: Integration
           5. Install and restart Home Assistant
 
           **Credits:**
-          Data provided by [Tiago Felícia](https://github.com/tiagofelicia/tiagofelicia.github.io)
+          Data provided by [Tiago Felícia](https://huggingface.co/spaces/tiagofelicia/simulador-tarifarios-eletricidade)
           """
 
                   print(changelog + footer)

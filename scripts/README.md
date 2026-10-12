@@ -113,7 +113,7 @@ python scripts/prepare_release.py 2.0.1
 #    git diff
 #
 # 2. Commit the changes:
-#    git add custom_components/energy_price_tracker/manifest.json CHANGELOG.md
+#    git add custom_components/portuguese_energy_price_tracker/manifest.json CHANGELOG.md
 #    git commit -m "Release v2.0.1"
 #
 # 3. Push to GitHub (this will trigger automatic release):
@@ -150,7 +150,7 @@ python scripts/prepare_release.py 2.0.1
 
    ```bash
    git diff
-   git add custom_components/energy_price_tracker/manifest.json CHANGELOG.md
+   git add custom_components/portuguese_energy_price_tracker/manifest.json CHANGELOG.md
    git commit -m "Release v2.0.1"
    ```
 
@@ -259,7 +259,7 @@ docker-compose up -d
 6. Once HACS is configured, add custom repositories:
    - Go to **HACS → Integrations**
    - Click the **three dots menu → Custom repositories**
-   - Add: `joaofernandes/portuguese_energy_price_tracker_ha_integration`
+   - Add: `fapgomes/portuguese_energy_price_tracker_ha_integration`
    - Category: **Integration**
    - Click **Add**
 
