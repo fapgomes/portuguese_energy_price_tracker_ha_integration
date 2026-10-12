@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-10-12
+
+### Added
+
+- **Active Provider Current Price sensors** (with and without VAT) now expose `period`, `provider_price`, `spot_price` and `tar_cost` from the active provider
+
+### Changed
+
+- **One HuggingFace fetcher for all config entries**: the OMIE file (~6 MB), constants and manifest are downloaded once instead of once per configured tariff
+
+### Fixed
+
+- **Release tooling**: `scripts/prepare_release.py` used the old `custom_components/energy_price_tracker` path; the release workflow pointed HACS users to the original repository and read the notes from an already emptied `[Unreleased]` section
+- **Integration links**: the Documentation and Issues links in `manifest.json` pointed to the original repository
+
+
 ## [2.4.0] - 2026-10-11
 
 ### Fixed
